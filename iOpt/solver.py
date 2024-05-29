@@ -7,6 +7,7 @@ from iOpt.method.grid_search_method import GridSearchMethod
 from iOpt.method.calculator import Calculator
 from iOpt.method.index_method_evaluate import IndexMethodEvaluate
 from iOpt.method.listener import Listener
+from iOpt.method.numerical_derivatives_method import NumericalDerivativesMethod
 from iOpt.method.optim_task import OptimizationTask
 from iOpt.method.search_data import SearchData
 from iOpt.method.solverFactory import SolverFactory
@@ -272,3 +273,30 @@ class Solver:
         status = self.method.check_stop_condition()
         for listener in self.__listeners:
             listener.on_method_stop(self.search_data, self.get_results(), status)
+
+    def agmnd_solve(self) -> Solution:
+        """
+        Search optimal value using the One-Dimensional Global Optimization
+        Algorithm utilizing Numerical Derivatives
+
+        :return: optimization problem solution.
+        """
+        temp_method = self.method
+        temp_process = self.process
+
+        self.method = NumericalDerivativesMethod(
+            self.parameters, self.task, self.evolvent, self.search_data)
+        self.process = SolverFactory.create_process(
+            parameters=self.parameters,
+            task=self.task,
+            evolvent=self.evolvent,
+            search_data=self.search_data,
+            method=self.method,
+            listeners=self.__listeners,
+            calculator=self.calculator)
+
+        sol = self.solve()
+        self.method = temp_method
+        self.process = temp_process
+
+        return sol

@@ -148,7 +148,7 @@ class OutputFunctions:
     def print_result(self, solved, number_of_global_trials, number_of_local_trials, solving_time,
                      solution_accuracy, best_trial_point, best_trial_d_point, best_trial_value, ndv):
         size_max_one_output = 15
-        dim = len(best_trial_point) + len(best_trial_d_point)
+        dim = len(best_trial_point) + (len(best_trial_d_point) if best_trial_d_point else 0)
         print("-" * (30 + size_max_one_output * dim + 2))
         print("|{:^{width}}|".format("Result", width=30 + size_max_one_output * dim))
         print("-" * (30 + size_max_one_output * dim + 2))
