@@ -4,11 +4,8 @@ import numpy as np
 
 from iOpt.evolvent.evolvent import Evolvent
 from iOpt.method.grid_search_method import GridSearchMethod
-from iOpt.method.calculator import Calculator
-from iOpt.method.index_method_evaluate import IndexMethodEvaluate
 from iOpt.method.listener import Listener
 from iOpt.method.numerical_derivatives_method import NumericalDerivativesMethod
-from iOpt.method.optim_task import OptimizationTask
 from iOpt.method.search_data import SearchData
 from iOpt.method.solverFactory import SolverFactory
 from iOpt.problem import Problem
@@ -276,8 +273,10 @@ class Solver:
 
     def agmnd_solve(self) -> Solution:
         """
-        Search optimal value using the One-Dimensional Global Optimization
-        Algorithm utilizing Numerical Derivatives
+        Search optimal value using the Global Optimization Algorithm utilizing
+        Numerical Derivatives.
+        Nested dimensionality reduction scheme is used for multi-dimensional
+        tasks.
 
         :return: optimization problem solution.
         """

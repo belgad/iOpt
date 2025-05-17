@@ -1,108 +1,67 @@
-import unittest
+from enum import Enum
 
-import numpy as np
-
-from iOpt.output_system.listeners.console_outputers import ConsoleOutputListener
-from iOpt.problem import Problem
 from iOpt.solver import Solver
 from iOpt.solver_parametrs import SolverParameters
-from iOpt.trial import FunctionValue, Point
-from problems.rastrigin import Rastrigin
-from problems.xsquared import XSquared
+
+from problems.GKLS import GKLS
+from problems.grishagin import Grishagin
+from problems.hill import Hill
+from problems.shekel import Shekel
 
 
-CONSOLE_OUTPUT_MODE = 'full'
+class SolverType(Enum):
+    DEFAULT = 1
+    AGMND = 2
 
 
-class TestSolveXSquared(unittest.TestCase):
-    def setUp(self):
-        self.problem = XSquared(1)
-        params = SolverParameters(r=3.5, eps=1e-6)
-        self.solver = Solver(self.problem, parameters=params)
-        self.cfol = ConsoleOutputListener(mode=CONSOLE_OUTPUT_MODE)
-        self.solver.add_listener(self.cfol)
-
-    def test_solve(self):
-        print("XSquared")
-        print("Default Method solve")
-        sol = self.solver.solve()
-        self.assertAlmostEqual(
-            sol.best_trials[0].point.float_variables[0],
-            self.problem.known_optimum[0].point.float_variables[0],
-            delta=1e-2)
-        print("NumericalDerivativesMethod solve")
-        sol = self.solver.agmnd_solve()
-        self.assertAlmostEqual(
-            sol.best_trials[0].point.float_variables[0],
-            self.problem.known_optimum[0].point.float_variables[0],
-            delta=1e-2)
+class ProblemType(Enum):
+    HILL = 1
+    SHEKEL = 2
+    GRISHAGIN = 3
+    GKLS = 4
 
 
-class TestSolveRastrigin(unittest.TestCase):
-    def setUp(self):
-        self.problem = Rastrigin(1)
-        params = SolverParameters(r=3.5, eps=1e-6)
-        self.solver = Solver(self.problem, parameters=params)
-        self.cfol = ConsoleOutputListener(mode=CONSOLE_OUTPUT_MODE)
-        self.solver.add_listener(self.cfol)
-
-    def test_solve(self):
-        print("Rastrigin")
-        print("Default Method solve")
-        sol = self.solver.solve()
-        self.assertAlmostEqual(
-            sol.best_trials[0].point.float_variables[0],
-            self.problem.known_optimum[0].point.float_variables[0],
-            delta=1e-5)
-        print("NumericalDerivativesMethod solve")
-        sol = self.solver.agmnd_solve()
-        self.assertAlmostEqual(
-            sol.best_trials[0].point.float_variables[0],
-            self.problem.known_optimum[0].point.float_variables[0],
-            delta=1e-5)
-
-
-class SinusoidProblem(Problem):
-    def __init__(self):
-        super(SinusoidProblem, self).__init__()
-        self.name = "Sinusoid"
-        self.dimension = 1
-        self.number_of_float_variables = 1
-        self.number_of_discrete_variables = 0
-        self.number_of_objectives = 1
-        self.number_of_constraints = 0
-        self.float_variable_names = np.array(["x"], dtype=str)
-        self.lower_bound_of_float_variables = np.array([0], dtype=np.double)
-        self.upper_bound_of_float_variables = np.array([8], dtype=np.double)
-
-    def calculate(self, point: Point, function_value: FunctionValue) -> FunctionValue:
-        function_value.value = np.sin(point.float_variables[0])
-        return function_value
-
-
-class TestSolveSinusoid(unittest.TestCase):
-    def setUp(self):
-        self.problem = SinusoidProblem()
-        params = SolverParameters(r=3.5, eps=1e-6)
-        self.solver = Solver(self.problem, parameters=params)
-        self.cfol = ConsoleOutputListener(mode=CONSOLE_OUTPUT_MODE)
-        self.solver.add_listener(self.cfol)
-
-    def test_solve(self):
-        print("Sinusoid")
-        print("Default Method solve")
-        sol = self.solver.solve()
-        self.assertAlmostEqual(
-            sol.best_trials[0].point.float_variables[0],
-            np.pi * 3 / 2,
-            delta=1e-5)
-        print("NumericalDerivativesMethod solve")
-        sol = self.solver.agmnd_solve()
-        self.assertAlmostEqual(
-            sol.best_trials[0].point.float_variables[0],
-            np.pi * 3 / 2,
-            delta=1e-5)
-
+R = 3.5
+EPS = 1e-2
+ITERS_LIMIT = 100_000
+SOLVER = SolverType.DEFAULT
+PROBLEM_TYPE = ProblemType.GKLS
 
 if __name__ == '__main__':
-    unittest.main()
+    if SOLVER == SolverType.DEFAULT:
+        print('-------------------- DEFAULT SOLVER')
+    elif SOLVER == SolverType.AGMND:
+        print('-------------------- AGMND SOLVER')
+    else:
+        raise ValueError("Wrong solver type!")
+
+    if PROBLEM_TYPE in (ProblemType.HILL, ProblemType.SHEKEL):
+        problem_count = 1000
+    elif PROBLEM_TYPE in (ProblemType.GRISHAGIN, ProblemType.GKLS):
+        problem_count = 100
+    else:
+        raise ValueError("Wrong problem type!")
+
+    for i in range(problem_count):
+        if PROBLEM_TYPE == ProblemType.HILL:
+            problem = Hill(i)
+        elif PROBLEM_TYPE == ProblemType.SHEKEL:
+            problem = Shekel(i)
+        elif PROBLEM_TYPE == ProblemType.GRISHAGIN:
+            problem = Grishagin(i)
+        elif PROBLEM_TYPE == ProblemType.GKLS:
+            problem = GKLS(3, i + 1)
+        params = SolverParameters(r=R, eps=EPS, iters_limit=ITERS_LIMIT)
+        solver = Solver(problem, params)
+
+        if SOLVER == SolverType.DEFAULT:
+            solution = solver.solve()
+        elif SOLVER == SolverType.AGMND:
+            solution = solver.agmnd_solve()
+
+        print(
+            'iters:', solution.number_of_global_trials,
+            '|',
+            'time:', solution.solving_time,
+            sep='', end='\n'
+        )

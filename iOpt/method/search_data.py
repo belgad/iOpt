@@ -238,7 +238,7 @@ class SearchData:
         self.solution = Solution(problem)
         self._allTrials = []
         self._RGlobalQueue = CharacteristicsQueue(maxlen)
-        self.__firstDataItem: SearchDataItem = None
+        self._firstDataItem: SearchDataItem = None
 
     def clear_queue(self):
         """
@@ -287,7 +287,7 @@ class SearchData:
         self._allTrials.append(left_data_item)
         self._allTrials.append(right_data_item)
 
-        self.__firstDataItem = left_data_item
+        self._firstDataItem = left_data_item
 
     # поиск покрывающего интервала
     # возвращает правую точку
@@ -530,7 +530,7 @@ class SearchData:
     def __iter__(self):
         # вернуть самую левую точку из дерева (ниже код проверить!)
         # return self._allTrials.min_item()[1]
-        self.curIter = self.__firstDataItem
+        self.curIter = self._firstDataItem
         if self.curIter is None:
             raise StopIteration
         else:

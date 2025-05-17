@@ -169,7 +169,7 @@ class OutputFunctions:
     def print_best(self, number_of_global_trials, number_of_local_trials, solution_accuracy,
                    best_trial_point, best_trial_d_point, best_trial_value, curr_iter, ndv):
         size_max_one_output = 15
-        dim = len(best_trial_point) + len(best_trial_d_point)
+        dim = len(best_trial_point) + (len(best_trial_d_point) if best_trial_d_point is not None else 0)
         print("|{:>29} {:<{width}}|".format("current iteration # ", curr_iter,
                                             width=size_max_one_output * dim))
         print("|{:>29} {:<{width}}|".format("global iteration count: ", number_of_global_trials,
